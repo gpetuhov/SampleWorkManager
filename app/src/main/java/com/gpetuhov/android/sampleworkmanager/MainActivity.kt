@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity() {
         WorkManager.getInstance().getStatusById(workRequest.id)
                 .observe(this@MainActivity, Observer { workStatus ->
                     if (workStatus != null && workStatus.state.isFinished) {
+                        // Note that this toast will show up only if the app is running.
+                        // Nevertheless, the enqueued task will be executed even if the app is killed!
                         toast(message)
                     }
                 })
