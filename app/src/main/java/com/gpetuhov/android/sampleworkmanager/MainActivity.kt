@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.gpetuhov.android.sampleworkmanager.work.MyWorker
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.toast
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,18 +17,18 @@ class MainActivity : AppCompatActivity() {
 
         textView.setOnClickListener {
             // Create work request to run MyWorker for one time
-            val compressionWork = OneTimeWorkRequestBuilder<MyWorker>().build()
+            val myWorkRequest = OneTimeWorkRequestBuilder<MyWorker>().build()
 
             // Enqueue work request into WorkManager
-            WorkManager.getInstance().enqueue(compressionWork)
+            WorkManager.getInstance().enqueue(myWorkRequest)
 
-//            WorkManager.getInstance().getStatusById(compressionWork.id)
-//                    .observe(this@MainActivity, Observer<MyWorker> { workStatus ->
-//                        // Do something with the status
-//                        if (workStatus != null && workStatus.state.isFinished) {
-//                            // ...
-//                        }
-//                    })
+            // Observe work status
+            WorkManager.getInstance().getStatusById(myWorkRequest.id)
+                    .observe(this@MainActivity, Observer { workStatus ->
+                        if (workStatus != null && workStatus.state.isFinished) {
+                            toast("Task complete")
+                        }
+                    })
         }
     }
 }
