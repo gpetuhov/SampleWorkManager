@@ -6,7 +6,9 @@ import android.os.Bundle
 import androidx.work.Constraints
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.gpetuhov.android.sampleworkmanager.work.MyWorker
+import com.gpetuhov.android.sampleworkmanager.work.MyWorker1
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.toast
 
@@ -33,13 +35,36 @@ class MainActivity : AppCompatActivity() {
             // Enqueue work request into WorkManager
             WorkManager.getInstance().enqueue(myWorkRequest)
 
-            // Observe work status
-            WorkManager.getInstance().getStatusById(myWorkRequest.id)
-                    .observe(this@MainActivity, Observer { workStatus ->
-                        if (workStatus != null && workStatus.state.isFinished) {
-                            toast("Task complete")
-                        }
-                    })
+            observeWorkStatus(myWorkRequest, "Task complete")
         }
+
+        // Chained tasks
+        textView.setOnLongClickListener {
+            val myWorkRequest1 = OneTimeWorkRequestBuilder<MyWorker1>().build()
+            val myWorkRequest2 = OneTimeWorkRequestBuilder<MyWorker1>().build()
+            val myWorkRequest3 = OneTimeWorkRequestBuilder<MyWorker1>().build()
+
+            WorkManager.getInstance()
+                    .beginWith(myWorkRequest1)
+                    .then(myWorkRequest2)
+                    .then(myWorkRequest3)
+                    .enqueue()
+
+            observeWorkStatus(myWorkRequest1, "Task 1 complete")
+            observeWorkStatus(myWorkRequest2, "Task 2 complete")
+            observeWorkStatus(myWorkRequest3, "Task 3 complete")
+
+            true
+        }
+    }
+
+    // Observe work status
+    private fun observeWorkStatus(workRequest: WorkRequest, message: String) {
+        WorkManager.getInstance().getStatusById(workRequest.id)
+                .observe(this@MainActivity, Observer { workStatus ->
+                    if (workStatus != null && workStatus.state.isFinished) {
+                        toast(message)
+                    }
+                })
     }
 }
